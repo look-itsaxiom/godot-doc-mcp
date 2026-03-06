@@ -371,5 +371,5 @@ Adding or changing MCP tools:
 ## Credits
 
 - **Upstream**: [tkmct/godot-doc-mcp](https://github.com/tkmct/godot-doc-mcp) — original MCP server with XML parsing, BM25 search index, and general tools
-- **Concept tools**: Added by [Axiom Studio](https://github.com/cskib) using the same pattern developed for [freecad-mcp](https://github.com/cskib/freecad-mcp)
+- **Concept tools**: Added by [Axiom Studio](https://github.com/look-itsaxiom) using the same pattern developed for [freecad-mcp](https://github.com/look-itsaxiom/freecad-mcp)
 - Godot Engine and documentation are trademarks of their respective owners. This project is not affiliated with or endorsed by the Godot project.
