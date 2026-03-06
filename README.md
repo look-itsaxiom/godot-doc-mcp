@@ -1,11 +1,15 @@
 # Godot API Docs MCP Server
 
-Offline Model Context Protocol (MCP) server that serves Godot Engine API documentation from a local `doc/` folder. It provides fast search and retrieval of class/method/signal/property docs over stdio to any MCP‑capable client.
+> **Fork of [tkmct/godot-doc-mcp](https://github.com/tkmct/godot-doc-mcp)** — extended with concept-oriented tools for semantic API exploration. See [What Changed](#what-changed-from-upstream) below.
 
+Offline Model Context Protocol (MCP) server that serves Godot Engine API documentation from a local `doc/` folder. Provides **concept-oriented tools** for common game development tasks plus general search and retrieval — 15 tools total over stdio.
+
+- **Concept-first**: 11 tools organized by what you're trying to do (physics, rendering, animation, UI, etc.)
+- **General tools**: 4 tools for open-ended search and class/symbol lookup
 - Zero network at runtime (local docs only)
 - Parses Godot 4.x XML docs; tolerates 3.x variants
 - Builds an in‑memory search index with optional on‑disk warm start
-- Exposes stable MCP tools for search and retrieval
+- 892 Godot classes indexed and classified by inheritance, naming, and description
 
 ---
 
@@ -156,7 +160,49 @@ Optional helper prompt exposed as an MCP Prompt:
 
 ---
 
+## What Changed from Upstream
+
+This fork is based on [tkmct/godot-doc-mcp](https://github.com/tkmct/godot-doc-mcp) (commit `fa96bfb`). The upstream provides an excellent foundation: XML parsing, BM25 search index, and 4 general MCP tools. We extended it with concept-oriented tools because:
+
+**Problem**: When working on a game, you think in concepts ("how do I set up physics?", "what animation tools exist?"), not in class names. The general tools require you to already know what you're looking for.
+
+**Solution**: 11 concept tools that return curated overviews, GDScript examples, and relevant classes — organized by game development task, not API structure. The general tools remain for deep exploration.
+
+### Changes Made
+
+| Area | What | Why |
+|------|------|-----|
+| `server/src/concepts/classifier.ts` | **New** — hybrid class classifier (inheritance + name patterns + description keywords) | Tags each of 892 classes with concepts like `physics`, `rendering`, `ui`, etc. |
+| `server/src/concepts/registry.ts` | **New** — curated overviews + GDScript examples per concept | Concept tools need prose guidance, not just class listings |
+| `server/src/adapters/godotTools.ts` | **Extended** — added `getConcept()` and `listConcepts()` | Wires concept data into the tools interface |
+| `server/src/mcp/stdio.ts` | **Extended** — 11 new tool registrations | Exposes concept tools alongside existing general tools |
+| `server/src/index.ts` | **Extended** — runs classifier at startup, passes to tools | Concept map built once at startup from parsed XML |
+
+All original tools (`godot_search`, `godot_get_class`, `godot_get_symbol`, `godot_list_classes`) are **unchanged**. All 26 upstream tests pass.
+
+---
+
 ## Tool Reference
+
+### Concept Tools (new)
+
+Use these first — they return curated guidance for common game dev tasks:
+
+| Tool | Description | Params |
+|------|-------------|--------|
+| `godot_scene_tree` | Nodes, parenting, groups, lifecycle | — |
+| `godot_physics` | Bodies, collision, joints, raycasting | `dimension?: "2d"\|"3d"` |
+| `godot_rendering` | Materials, shaders, meshes, lights, cameras | `dimension?: "2d"\|"3d"` |
+| `godot_audio` | Players, streams, effects, buses | — |
+| `godot_animation` | AnimationPlayer, tweens, skeletons | — |
+| `godot_ui` | Controls, buttons, containers, themes | — |
+| `godot_input` | Events, actions, keyboard, mouse, gamepad | — |
+| `godot_networking` | Multiplayer, RPCs, WebSocket, HTTP | — |
+| `godot_resources` | Loading, saving, custom resources | — |
+| `godot_math` | Vectors, transforms, quaternions, geometry | — |
+| `godot_list_concepts` | List all concepts with class counts | — |
+
+### General Tools (unchanged from upstream)
 
 - `godot_search`
   - params: `{ query: string, kind?: "class"|"method"|"property"|"signal"|"constant", limit?: number }`
@@ -324,4 +370,6 @@ Adding or changing MCP tools:
 
 ## Credits
 
-Godot Engine and documentation are trademarks of their respective owners. This project is not affiliated with or endorsed by the Godot project.
+- **Upstream**: [tkmct/godot-doc-mcp](https://github.com/tkmct/godot-doc-mcp) — original MCP server with XML parsing, BM25 search index, and general tools
+- **Concept tools**: Added by [Axiom Studio](https://github.com/cskib) using the same pattern developed for [freecad-mcp](https://github.com/cskib/freecad-mcp)
+- Godot Engine and documentation are trademarks of their respective owners. This project is not affiliated with or endorsed by the Godot project.
