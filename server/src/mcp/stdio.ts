@@ -107,6 +107,133 @@ export async function startMcpStdioServer(
     },
   );
 
+  // --- Concept-oriented tools ---
+
+  mcp.tool(
+    "godot_scene_tree",
+    "Scene tree fundamentals: nodes, parenting, groups, signals, lifecycle (_ready, _process). Start here for scene architecture.",
+    {},
+    async (_args, _extra) => {
+      const result = await tools.getConcept({ name: "scene_tree" });
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    },
+  );
+
+  mcp.tool(
+    "godot_physics",
+    "Physics system: rigid/static/character bodies, collision shapes, areas, joints, raycasting.",
+    { dimension: z.enum(["2d", "3d"]).optional() },
+    async (args, _extra) => {
+      const { dimension } = args as { dimension?: "2d" | "3d" };
+      const result = await tools.getConcept({ name: "physics" });
+      if (dimension) {
+        const dim = dimension.toUpperCase();
+        result.classes = result.classes.filter((c) => c.name.includes(dim));
+      }
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    },
+  );
+
+  mcp.tool(
+    "godot_rendering",
+    "Rendering and graphics: materials, shaders, meshes, textures, lights, cameras, sprites, viewports.",
+    { dimension: z.enum(["2d", "3d"]).optional() },
+    async (args, _extra) => {
+      const { dimension } = args as { dimension?: "2d" | "3d" };
+      const result = await tools.getConcept({ name: "rendering" });
+      if (dimension) {
+        const dim = dimension.toUpperCase();
+        result.classes = result.classes.filter((c) => c.name.includes(dim));
+      }
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    },
+  );
+
+  mcp.tool(
+    "godot_audio",
+    "Audio system: players, streams, effects, buses.",
+    {},
+    async (_args, _extra) => {
+      const result = await tools.getConcept({ name: "audio" });
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    },
+  );
+
+  mcp.tool(
+    "godot_animation",
+    "Animation: AnimationPlayer, AnimationTree, tweens, skeletons, blend trees.",
+    {},
+    async (_args, _extra) => {
+      const result = await tools.getConcept({ name: "animation" });
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    },
+  );
+
+  mcp.tool(
+    "godot_ui",
+    "UI/Control nodes: buttons, labels, containers, panels, themes, layout.",
+    {},
+    async (_args, _extra) => {
+      const result = await tools.getConcept({ name: "ui" });
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    },
+  );
+
+  mcp.tool(
+    "godot_input",
+    "Input handling: events, actions, keyboard, mouse, touch, gamepad.",
+    {},
+    async (_args, _extra) => {
+      const result = await tools.getConcept({ name: "input" });
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    },
+  );
+
+  mcp.tool(
+    "godot_networking",
+    "Networking: multiplayer, RPCs, WebSocket, HTTP.",
+    {},
+    async (_args, _extra) => {
+      const result = await tools.getConcept({ name: "networking" });
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    },
+  );
+
+  mcp.tool(
+    "godot_resources",
+    "Resource system: loading, saving, custom resources, importers.",
+    {},
+    async (_args, _extra) => {
+      const result = await tools.getConcept({ name: "resources" });
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    },
+  );
+
+  mcp.tool(
+    "godot_math",
+    "Math types: vectors, transforms, quaternions, AABB, geometry utilities.",
+    {},
+    async (_args, _extra) => {
+      const result = await tools.getConcept({ name: "math" });
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    },
+  );
+
+  mcp.tool(
+    "godot_list_concepts",
+    "List all available concept categories with class counts.",
+    {},
+    async (_args, _extra) => {
+      const concepts = await tools.listConcepts();
+      const results: Array<{ concept: string; classCount: number }> = [];
+      for (const c of concepts) {
+        const data = await tools.getConcept({ name: c });
+        results.push({ concept: c, classCount: data.classes.length });
+      }
+      return { content: [{ type: "text", text: JSON.stringify(results) }] };
+    },
+  );
+
   // Prompts
   mcp.prompt("how_to_use_godot_docs", "Helper for using Godot docs tools effectively", async () => {
     return {

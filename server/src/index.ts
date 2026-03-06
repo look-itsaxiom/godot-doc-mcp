@@ -1,5 +1,6 @@
 import path from "node:path";
 import { createGodotTools, type GodotTools } from "./adapters/godotTools.js";
+import { classifyConcepts } from "./concepts/classifier.js";
 import { isNodeVersionOk, loadConfig, validateConfig } from "./env.js";
 import { buildIndex } from "./indexer/indexBuilder.js";
 import { createLogger } from "./logger.js";
@@ -15,7 +16,8 @@ export async function createServer(env: Record<string, string | undefined> = pro
   const logger = createLogger(cfg.MCP_SERVER_LOG);
   const classes = await parseAll(cfg.GODOT_DOC_DIR);
   const index = buildIndex(classes);
-  const tools = createGodotTools(classes, index, logger);
+  const conceptMap = classifyConcepts(classes);
+  const tools = createGodotTools(classes, index, logger, conceptMap);
   return { cfg, logger, tools };
 }
 
@@ -65,6 +67,18 @@ export async function start(env: Record<string, string | undefined> = process.en
       if (!i) throw new Error("Server not ready");
       return i.listClasses(input);
     },
+    async getConcept(input: { name: string; kind?: string }) {
+      await readyPromise;
+      const i = impl;
+      if (!i) throw new Error("Server not ready");
+      return i.getConcept(input);
+    },
+    async listConcepts() {
+      await readyPromise;
+      const i = impl;
+      if (!i) throw new Error("Server not ready");
+      return i.listConcepts();
+    },
   };
 
   if (String(cfg.MCP_STDIO) === "1") {
@@ -78,7 +92,8 @@ export async function start(env: Record<string, string | undefined> = process.en
             validateConfig(cfg);
             const classes = await parseAll(cfg.GODOT_DOC_DIR);
             const index = buildIndex(classes);
-            impl = createGodotTools(classes, index, logger);
+            const conceptMap = classifyConcepts(classes);
+            impl = createGodotTools(classes, index, logger, conceptMap);
             ready();
             logger.info("Godot docs index ready");
           } catch (err) {
