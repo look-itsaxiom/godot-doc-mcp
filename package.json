@@ -1,8 +1,17 @@
 {
-  "name": "godot-docs-mcp-server",
+  "name": "godot-doc-mcp",
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "godot-doc-mcp": "./bin/godot-doc-mcp.mjs"
+  },
+  "files": [
+    "bin/",
+    "server/src/",
+    "package.json",
+    "README.md"
+  ],
   "scripts": {
     "test": "vitest run",
     "dev": "tsx watch server/src/cli.ts",
