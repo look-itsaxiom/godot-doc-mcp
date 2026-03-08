@@ -24,8 +24,11 @@ Build a local Model Context Protocol (MCP) server that serves Godot Engine API d
 - `server/src/adapters/` — mapping from parsed docs to MCP tools/resources.
 - `server/src/search/` — lightweight in‑memory search engine.
 - `server/src/resolver/` — class/symbol resolution helpers.
-- `server/test/` — unit tests for parser, index, resolver, tools, server.
-- `.cache/godot-index.json` — generated index (ignored in VCS).
+- `server/src/concepts/` — concept classifier and curated registry.
+- `server/src/docResolver.ts` — auto-detect Godot binary and resolve doc location.
+- `server/test/` — unit tests for parser, index, resolver, tools, server, concepts, doc resolution.
+- `bin/godot-doc-mcp.mjs` — npm bin entrypoint (npx support).
+- `.cache/` — generated index and extracted docs per Godot version (ignored in VCS).
 
 If a Python implementation is later desired, place it in `server-py/` mirroring the structure.
 
@@ -60,16 +63,19 @@ Resources:
 Prompts (optional helpers exposed via MCP):
 - `how_to_use_godot_docs` — Short instruction prompt that teaches the model to call `godot_search` first, then `godot_get_*` for details.
 
-## Current Status (Sep 21, 2025)
-- Stdio MCP server running with tools/resources/prompts implemented.
+## Current Status (Mar 2026)
+- Stdio MCP server running with 15 tools, resources, and prompts.
+- Auto-detection of Godot binary with version-keyed doc caching.
+- 11 concept-oriented tools (physics, rendering, animation, UI, etc.) with relevance-sorted output capped at 25 classes.
 - XML parsing, symbol resolution, search index, and persistence utilities in place.
 - Env handling and minimal logger wired.
-- Tests and fixtures cover parser, indexer, search, resolver, tools, server, and security guards.
-- Example scripts and run instructions validated locally.
+- 35 tests across 14 files covering parser, indexer, search, resolver, tools, server, security, concepts, and doc resolution.
+- Installable via `npx godot-doc-mcp`.
 
 Known follow‑ups (not blockers):
 - Optional file watcher to rebuild index on doc changes.
 - Optional warm‑start on boot using `.cache/godot-index.json` automatically if present.
+- npm publish.
 
 ## Type Shapes (TypeScript)
 These interfaces are for internal use and tool return values.
@@ -175,7 +181,8 @@ GODOT_DOC_DIR=./doc pnpm dev
 - Memory overhead ≤ 150MB for index in Node.
 
 ## Security & Privacy
-- Never read outside `GODOT_DOC_DIR` except `.cache/`.
+- Never read outside the resolved docs directory except `.cache/`.
+- May execute the Godot binary with `--doctool` and `--version` for doc extraction (no game code is run).
 - No network calls in normal operation.
 - Avoid executing any code found inside docs; treat as plain text.
 
@@ -191,10 +198,17 @@ GODOT_DOC_DIR=./doc pnpm dev
 2. Keep changes focused; do not modify unrelated files.
 3. If you add a new MCP tool or change a return shape, update this AGENTS.md and the README.
 
-## Implementation Checklist (first pass)
+## Implementation Checklist
 - [x] Scaffold `server/` (tsconfig, package.json, src/).
 - [x] Implement XML → `GodotClassDoc` parser.
 - [x] Build search index + persistence.
 - [x] Expose MCP tools/resources via stdio.
 - [x] Wire env vars; add logging.
 - [x] Add tests + fixtures; document examples.
+- [x] Concept-oriented tools (11 tools with classifier + curated registry).
+- [x] Auto-detect Godot binary and extract docs with version-keyed cache.
+- [x] npm bin entrypoint for npx support.
+- [x] Cap concept tool output to 25 most relevant classes.
+- [ ] npm publish.
+- [ ] Optional file watcher for doc changes.
+- [ ] Optional warm-start from cached index.

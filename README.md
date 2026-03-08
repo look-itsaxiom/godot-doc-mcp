@@ -2,14 +2,14 @@
 
 > **Fork of [tkmct/godot-doc-mcp](https://github.com/tkmct/godot-doc-mcp)** — extended with concept-oriented tools for semantic API exploration. See [What Changed](#what-changed-from-upstream) below.
 
-Offline Model Context Protocol (MCP) server that serves Godot Engine API documentation from a local `doc/` folder. Provides **concept-oriented tools** for common game development tasks plus general search and retrieval — 15 tools total over stdio.
+Offline Model Context Protocol (MCP) server that serves Godot Engine API documentation. Auto-detects your Godot installation, extracts docs, and provides **concept-oriented tools** for common game development tasks plus general search and retrieval — 15 tools total over stdio.
 
+- **Zero config**: auto-detects Godot on your PATH, extracts and caches docs per version
 - **Concept-first**: 11 tools organized by what you're trying to do (physics, rendering, animation, UI, etc.)
 - **General tools**: 4 tools for open-ended search and class/symbol lookup
+- **Any Godot version**: works with whatever Godot 3.x or 4.x you have installed
 - Zero network at runtime (local docs only)
-- Parses Godot 4.x XML docs; tolerates 3.x variants
-- Builds an in‑memory search index with optional on‑disk warm start
-- 892 Godot classes indexed and classified by inheritance, naming, and description
+- BM25 search index with concept classification by inheritance, naming, and description
 
 ---
 
@@ -72,11 +72,12 @@ If you already have XML docs extracted (or want to use the bundled docs for deve
 
 ## What This Is
 
-This project turns the Godot docs you already have locally into an MCP server so LLM tooling can search and retrieve authoritative API information offline. The server:
-- Parses `doc/classes/*.xml` into typed objects
-- Builds a compact inverted index covering class names and text fields
-- Serves MCP tools over stdio for search and direct lookup
-- Optionally writes `.cache/godot-index.json` for warm starts
+An MCP server that gives LLM tooling offline access to authoritative Godot API documentation. The server:
+- Auto-detects your Godot installation and extracts docs via `--doctool` (or uses pre-extracted XML)
+- Parses XML into typed objects and builds a BM25 search index
+- Classifies classes into game development concepts (physics, rendering, UI, etc.)
+- Serves 15 MCP tools over stdio for search, lookup, and concept exploration
+- Caches extracted docs and index per Godot version for fast restarts
 
 Non‑goals (for now): authoring docs, live web fetching, or general web search.
 
@@ -94,7 +95,7 @@ Non‑goals (for now): authoring docs, live web fetching, or general web search.
   - `server/src/resolver/` — class/symbol resolution helpers
   - `server/src/types.ts` — shared TypeScript interfaces
 - `server/test/` — unit tests (parser, index, resolver, tools, server)
-- `doc/` — read‑only Godot XML docs (classes, schema, tools)
+- `doc/` — bundled Godot XML docs for development/testing (not included in npm package)
 - `.cache/` — generated index file (ignored in VCS)
 - `scripts/` — local utilities and MCP client demos
 
@@ -200,7 +201,7 @@ This fork is based on [tkmct/godot-doc-mcp](https://github.com/tkmct/godot-doc-m
 | `server/src/mcp/stdio.ts` | **Extended** — 11 new tool registrations | Exposes concept tools alongside existing general tools |
 | `server/src/index.ts` | **Extended** — runs classifier at startup, passes to tools | Concept map built once at startup from parsed XML |
 
-All original tools (`godot_search`, `godot_get_class`, `godot_get_symbol`, `godot_list_classes`) are **unchanged**. All 26 upstream tests pass.
+All original tools (`godot_search`, `godot_get_class`, `godot_get_symbol`, `godot_list_classes`) are **unchanged**.
 
 ---
 
@@ -212,17 +213,19 @@ Use these first — they return curated guidance for common game dev tasks:
 
 | Tool | Description | Params |
 |------|-------------|--------|
-| `godot_scene_tree` | Nodes, parenting, groups, lifecycle | — |
-| `godot_physics` | Bodies, collision, joints, raycasting | `dimension?: "2d"\|"3d"` |
-| `godot_rendering` | Materials, shaders, meshes, lights, cameras | `dimension?: "2d"\|"3d"` |
-| `godot_audio` | Players, streams, effects, buses | — |
-| `godot_animation` | AnimationPlayer, tweens, skeletons | — |
-| `godot_ui` | Controls, buttons, containers, themes | — |
-| `godot_input` | Events, actions, keyboard, mouse, gamepad | — |
-| `godot_networking` | Multiplayer, RPCs, WebSocket, HTTP | — |
-| `godot_resources` | Loading, saving, custom resources | — |
-| `godot_math` | Vectors, transforms, quaternions, geometry | — |
+| `godot_scene_tree` | Nodes, parenting, groups, lifecycle | `maxClasses?: number` |
+| `godot_physics` | Bodies, collision, joints, raycasting | `dimension?: "2d"\|"3d"`, `maxClasses?: number` |
+| `godot_rendering` | Materials, shaders, meshes, lights, cameras | `dimension?: "2d"\|"3d"`, `maxClasses?: number` |
+| `godot_audio` | Players, streams, effects, buses | `maxClasses?: number` |
+| `godot_animation` | AnimationPlayer, tweens, skeletons | `maxClasses?: number` |
+| `godot_ui` | Controls, buttons, containers, themes | `maxClasses?: number` |
+| `godot_input` | Events, actions, keyboard, mouse, gamepad | `maxClasses?: number` |
+| `godot_networking` | Multiplayer, RPCs, WebSocket, HTTP | `maxClasses?: number` |
+| `godot_resources` | Loading, saving, custom resources | `maxClasses?: number` |
+| `godot_math` | Vectors, transforms, quaternions, geometry | `maxClasses?: number` |
 | `godot_list_concepts` | List all concepts with class counts | — |
+
+Concept tools return the 25 most relevant classes by default. Use `maxClasses` to adjust. The response includes `totalClasses` with the full count.
 
 ### General Tools (unchanged from upstream)
 
@@ -373,7 +376,8 @@ Adding or changing MCP tools:
 
 ## Security & Privacy
 
-- Reads only within `GODOT_DOC_DIR` and `.cache/`
+- Reads only within the resolved docs directory and `.cache/`
+- May execute the Godot binary with `--doctool` and `--version` for doc extraction (no game code is run)
 - Makes no network calls during normal operation
 - Treats docs as plain text; never executes embedded code
 
