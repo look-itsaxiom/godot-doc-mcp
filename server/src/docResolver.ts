@@ -59,9 +59,17 @@ async function extractDocs(
   mkdirSync(targetDir, { recursive: true });
   try {
     await exec(bin, ["--doctool", targetDir, "--headless"]);
-  } catch {
+  } catch (firstErr) {
     // Fall back without --headless for older versions
-    await exec(bin, ["--doctool", targetDir]);
+    try {
+      await exec(bin, ["--doctool", targetDir]);
+    } catch (secondErr) {
+      throw new Error(
+        `Godot --doctool failed.\n` +
+        `With --headless: ${firstErr instanceof Error ? firstErr.message : String(firstErr)}\n` +
+        `Without --headless: ${secondErr instanceof Error ? secondErr.message : String(secondErr)}`,
+      );
+    }
   }
 }
 
@@ -134,7 +142,15 @@ export async function resolveDocDir(
 
   // 2. GODOT_BIN env var
   if (opts.godotBin) {
-    return resolveFromBinary(opts.godotBin, opts.cacheDir, exec);
+    try {
+      return await resolveFromBinary(opts.godotBin, opts.cacheDir, exec);
+    } catch (e) {
+      throw new Error(
+        `GODOT_BIN is set to "${opts.godotBin}" but it could not be executed.\n` +
+        `Error: ${e instanceof Error ? e.message : String(e)}\n` +
+        `Ensure the path points to a valid Godot 4 binary.`,
+      );
+    }
   }
 
   // 3. Auto-detect godot on PATH
