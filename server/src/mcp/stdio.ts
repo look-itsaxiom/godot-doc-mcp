@@ -112,9 +112,10 @@ export async function startMcpStdioServer(
   mcp.tool(
     "godot_scene_tree",
     "Scene tree fundamentals: nodes, parenting, groups, signals, lifecycle (_ready, _process). Start here for scene architecture.",
-    {},
-    async (_args, _extra) => {
-      const result = await tools.getConcept({ name: "scene_tree" });
+    { maxClasses: z.number().int().positive().optional() },
+    async (args, _extra) => {
+      const { maxClasses } = args as { maxClasses?: number };
+      const result = await tools.getConcept({ name: "scene_tree", maxClasses });
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     },
   );
@@ -122,10 +123,10 @@ export async function startMcpStdioServer(
   mcp.tool(
     "godot_physics",
     "Physics system: rigid/static/character bodies, collision shapes, areas, joints, raycasting.",
-    { dimension: z.enum(["2d", "3d"]).optional() },
+    { dimension: z.enum(["2d", "3d"]).optional(), maxClasses: z.number().int().positive().optional() },
     async (args, _extra) => {
-      const { dimension } = args as { dimension?: "2d" | "3d" };
-      const result = await tools.getConcept({ name: "physics" });
+      const { dimension, maxClasses } = args as { dimension?: "2d" | "3d"; maxClasses?: number };
+      const result = await tools.getConcept({ name: "physics", maxClasses });
       if (dimension) {
         const dim = dimension.toUpperCase();
         result.classes = result.classes.filter((c) => c.name.includes(dim));
@@ -137,10 +138,10 @@ export async function startMcpStdioServer(
   mcp.tool(
     "godot_rendering",
     "Rendering and graphics: materials, shaders, meshes, textures, lights, cameras, sprites, viewports.",
-    { dimension: z.enum(["2d", "3d"]).optional() },
+    { dimension: z.enum(["2d", "3d"]).optional(), maxClasses: z.number().int().positive().optional() },
     async (args, _extra) => {
-      const { dimension } = args as { dimension?: "2d" | "3d" };
-      const result = await tools.getConcept({ name: "rendering" });
+      const { dimension, maxClasses } = args as { dimension?: "2d" | "3d"; maxClasses?: number };
+      const result = await tools.getConcept({ name: "rendering", maxClasses });
       if (dimension) {
         const dim = dimension.toUpperCase();
         result.classes = result.classes.filter((c) => c.name.includes(dim));
@@ -152,9 +153,10 @@ export async function startMcpStdioServer(
   mcp.tool(
     "godot_audio",
     "Audio system: players, streams, effects, buses.",
-    {},
-    async (_args, _extra) => {
-      const result = await tools.getConcept({ name: "audio" });
+    { maxClasses: z.number().int().positive().optional() },
+    async (args, _extra) => {
+      const { maxClasses } = args as { maxClasses?: number };
+      const result = await tools.getConcept({ name: "audio", maxClasses });
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     },
   );
@@ -162,9 +164,10 @@ export async function startMcpStdioServer(
   mcp.tool(
     "godot_animation",
     "Animation: AnimationPlayer, AnimationTree, tweens, skeletons, blend trees.",
-    {},
-    async (_args, _extra) => {
-      const result = await tools.getConcept({ name: "animation" });
+    { maxClasses: z.number().int().positive().optional() },
+    async (args, _extra) => {
+      const { maxClasses } = args as { maxClasses?: number };
+      const result = await tools.getConcept({ name: "animation", maxClasses });
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     },
   );
@@ -172,9 +175,10 @@ export async function startMcpStdioServer(
   mcp.tool(
     "godot_ui",
     "UI/Control nodes: buttons, labels, containers, panels, themes, layout.",
-    {},
-    async (_args, _extra) => {
-      const result = await tools.getConcept({ name: "ui" });
+    { maxClasses: z.number().int().positive().optional() },
+    async (args, _extra) => {
+      const { maxClasses } = args as { maxClasses?: number };
+      const result = await tools.getConcept({ name: "ui", maxClasses });
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     },
   );
@@ -182,9 +186,10 @@ export async function startMcpStdioServer(
   mcp.tool(
     "godot_input",
     "Input handling: events, actions, keyboard, mouse, touch, gamepad.",
-    {},
-    async (_args, _extra) => {
-      const result = await tools.getConcept({ name: "input" });
+    { maxClasses: z.number().int().positive().optional() },
+    async (args, _extra) => {
+      const { maxClasses } = args as { maxClasses?: number };
+      const result = await tools.getConcept({ name: "input", maxClasses });
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     },
   );
@@ -192,9 +197,10 @@ export async function startMcpStdioServer(
   mcp.tool(
     "godot_networking",
     "Networking: multiplayer, RPCs, WebSocket, HTTP.",
-    {},
-    async (_args, _extra) => {
-      const result = await tools.getConcept({ name: "networking" });
+    { maxClasses: z.number().int().positive().optional() },
+    async (args, _extra) => {
+      const { maxClasses } = args as { maxClasses?: number };
+      const result = await tools.getConcept({ name: "networking", maxClasses });
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     },
   );
@@ -202,9 +208,10 @@ export async function startMcpStdioServer(
   mcp.tool(
     "godot_resources",
     "Resource system: loading, saving, custom resources, importers.",
-    {},
-    async (_args, _extra) => {
-      const result = await tools.getConcept({ name: "resources" });
+    { maxClasses: z.number().int().positive().optional() },
+    async (args, _extra) => {
+      const { maxClasses } = args as { maxClasses?: number };
+      const result = await tools.getConcept({ name: "resources", maxClasses });
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     },
   );
@@ -212,9 +219,10 @@ export async function startMcpStdioServer(
   mcp.tool(
     "godot_math",
     "Math types: vectors, transforms, quaternions, AABB, geometry utilities.",
-    {},
-    async (_args, _extra) => {
-      const result = await tools.getConcept({ name: "math" });
+    { maxClasses: z.number().int().positive().optional() },
+    async (args, _extra) => {
+      const { maxClasses } = args as { maxClasses?: number };
+      const result = await tools.getConcept({ name: "math", maxClasses });
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     },
   );
@@ -228,7 +236,7 @@ export async function startMcpStdioServer(
       const results: Array<{ concept: string; classCount: number }> = [];
       for (const c of concepts) {
         const data = await tools.getConcept({ name: c });
-        results.push({ concept: c, classCount: data.classes.length });
+        results.push({ concept: c, classCount: data.totalClasses });
       }
       return { content: [{ type: "text", text: JSON.stringify(results) }] };
     },

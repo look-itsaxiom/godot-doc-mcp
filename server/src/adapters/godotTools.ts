@@ -7,6 +7,7 @@ export interface ConceptResult {
   overview: string;
   examples: string[];
   classes: Array<{ name: string; brief: string; inherits?: string }>;
+  totalClasses: number;
 }
 
 export interface GodotTools {
@@ -18,7 +19,7 @@ export interface GodotTools {
   getClass(input: { name: string; includeAncestors?: boolean; maxDepth?: number }): Promise<GodotClassDoc | AncestryResponse>;
   getSymbol(input: { qname: string }): Promise<GodotSymbolDoc>;
   listClasses(input: { prefix?: string; limit?: number }): Promise<string[]>;
-  getConcept(input: { name: string; kind?: string }): Promise<ConceptResult>;
+  getConcept(input: { name: string; kind?: string; maxClasses?: number }): Promise<ConceptResult>;
   listConcepts(): Promise<string[]>;
 }
 
@@ -106,13 +107,26 @@ export function createGodotTools(
           }
         }
       }
-      // Sort alphabetically
-      matchingClasses.sort((a, b) => a.name.localeCompare(b.name));
+      const MAX = input.maxClasses ?? 25;
+      const totalClasses = matchingClasses.length;
+
+      // Sort: prioritize classes whose name contains a concept-related keyword
+      const conceptKeywords = conceptName.split('_');
+      matchingClasses.sort((a, b) => {
+        const aNameLower = a.name.toLowerCase();
+        const bNameLower = b.name.toLowerCase();
+        const aHasKeyword = conceptKeywords.some(k => aNameLower.includes(k));
+        const bHasKeyword = conceptKeywords.some(k => bNameLower.includes(k));
+        if (aHasKeyword !== bHasKeyword) return aHasKeyword ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      });
+
       return {
         title: overview.title,
         overview: overview.overview,
         examples: overview.examples,
-        classes: matchingClasses,
+        classes: matchingClasses.slice(0, MAX),
+        totalClasses,
       };
     },
     async listConcepts() {
