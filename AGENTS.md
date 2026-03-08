@@ -29,6 +29,11 @@ Build a local Model Context Protocol (MCP) server that serves Godot Engine API d
 - `server/test/` — unit tests for parser, index, resolver, tools, server, concepts, doc resolution.
 - `bin/godot-doc-mcp.mjs` — npm bin entrypoint (npx support).
 - `.cache/` — generated index and extracted docs per Godot version (ignored in VCS).
+- `plugin.json` — Claude Code plugin manifest.
+- `.mcp.json` — MCP server configuration for plugin.
+- `skills/godot-docs.md` — Plugin skill with tool reference and workflow guidance.
+- `commands/` — Slash commands (godot-search, godot-class, godot-concept).
+- `agents/godot-explorer.md` — Autonomous API exploration agent.
 
 If a Python implementation is later desired, place it in `server-py/` mirroring the structure.
 
@@ -70,12 +75,11 @@ Prompts (optional helpers exposed via MCP):
 - XML parsing, symbol resolution, search index, and persistence utilities in place.
 - Env handling and minimal logger wired.
 - 35 tests across 14 files covering parser, indexer, search, resolver, tools, server, security, concepts, and doc resolution.
-- Installable via `npx godot-doc-mcp`.
+- Installable via `npx godot-doc-mcp`. Also installable as a Claude Code plugin via `claude plugin add look-itsaxiom/godot-doc-mcp`.
 
 Known follow‑ups (not blockers):
 - Optional file watcher to rebuild index on doc changes.
 - Optional warm‑start on boot using `.cache/godot-index.json` automatically if present.
-- npm publish.
 
 ## Type Shapes (TypeScript)
 These interfaces are for internal use and tool return values.
@@ -209,6 +213,6 @@ GODOT_DOC_DIR=./doc pnpm dev
 - [x] Auto-detect Godot binary and extract docs with version-keyed cache.
 - [x] npm bin entrypoint for npx support.
 - [x] Cap concept tool output to 25 most relevant classes.
-- [ ] npm publish.
+- [x] Claude Code plugin conversion (plugin.json, .mcp.json, skills, commands, agent).
 - [ ] Optional file watcher for doc changes.
 - [ ] Optional warm-start from cached index.

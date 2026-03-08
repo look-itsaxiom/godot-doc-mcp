@@ -1,0 +1,5 @@
+{
+  "name": "godot-doc-mcp",
+  "version": "0.2.0",
+  "description": "Offline Godot API docs — 15 MCP tools for search, lookup, and concept exploration. Auto-detects your Godot installation."
+}

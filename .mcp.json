@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "godot-docs": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/bin/bootstrap.mjs"],
+      "env": {
+        "MCP_STDIO": "1"
+      }
+    }
+  }
+}

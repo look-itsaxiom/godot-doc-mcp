@@ -15,7 +15,15 @@ Offline Model Context Protocol (MCP) server that serves Godot Engine API documen
 
 ## Quick Start
 
-### Via npx (recommended)
+### Via Claude Code plugin (recommended)
+
+```bash
+claude plugin add look-itsaxiom/godot-doc-mcp
+```
+
+The plugin auto-starts the MCP server, adds slash commands (`/godot-search`, `/godot-class`, `/godot-concept`), and includes an autonomous API exploration agent.
+
+### Via npx (alternative — requires npm publish)
 
 Add to your Claude Code settings (`~/.claude.json` → `mcpServers`):
 
@@ -29,8 +37,6 @@ Add to your Claude Code settings (`~/.claude.json` → `mcpServers`):
   }
 }
 ```
-
-The server auto-detects your Godot installation and extracts API docs on first run. Docs are cached for fast subsequent starts.
 
 ### Multiple Godot versions
 
