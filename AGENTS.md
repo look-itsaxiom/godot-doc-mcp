@@ -30,7 +30,7 @@ Build a local Model Context Protocol (MCP) server that serves Godot Engine API d
 If a Python implementation is later desired, place it in `server-py/` mirroring the structure.
 
 ## High‑Level Architecture
-1. Startup loads configuration (env/flags), validates `GODOT_DOC_DIR`.
+1. Startup loads configuration (env/flags), resolves doc location (via `GODOT_DOC_DIR`, `GODOT_BIN`, or auto-detection).
 2. Parse XML files under `doc/classes/*.xml` into typed objects.
 3. Build a compact inverted index (class names, members, methods, signals, constants, plus text fields: brief/description). Persist to `.cache/godot-index.json` and keep an in‑memory representation for fast queries.
 4. Expose MCP tools and resources for search and retrieval.
@@ -135,10 +135,13 @@ export type GodotSymbolDoc =
 - Result `snippet` should be a short excerpt from `brief` or `description` with query highlights where possible.
 
 ## Environment Variables
-- `GODOT_DOC_DIR` (default: `./doc`) — Path to the Godot docs root that contains `classes/`.
+- `GODOT_DOC_DIR` (optional, default: auto-detected) — Path to pre-extracted Godot XML docs (must contain `classes/` subdirectory). Overrides auto-detection.
+- `GODOT_BIN` (optional, default: auto-detected) — Path to a specific Godot binary. Used to extract docs via `--doctool`.
 - `GODOT_INDEX_PATH` (default: `./.cache/godot-index.json`) — On‑disk index.
 - `MCP_SERVER_LOG` (default: `info`) — `silent|error|warn|info|debug`.
 - `MCP_STDIO` (default: `1`) — Use stdio transport; future socket support may add `MCP_SOCKET_PATH`.
+
+Doc resolution order: `GODOT_DOC_DIR` → `GODOT_BIN` → auto-detect PATH → error with instructions.
 
 ## Build & Run (Node/TypeScript)
 - Node 20+ and `pnpm` recommended (npm works too).
@@ -150,10 +153,9 @@ export type GodotSymbolDoc =
 
 Example local run (stdio):
 ```bash
-# from repo root
-export GODOT_DOC_DIR=./doc
+# from repo root — use bundled docs for development
 pnpm install
-pnpm dev
+GODOT_DOC_DIR=./doc pnpm dev
 ```
 
 ## Testing Guidance
@@ -163,7 +165,7 @@ pnpm dev
 - Contract test MCP tools return shapes and error cases.
 
 ## Error Handling
-- Invalid `GODOT_DOC_DIR` → fail fast with clear message and hint.
+- No docs found (no `GODOT_DOC_DIR`, no `GODOT_BIN`, no Godot on PATH) → fail fast with clear message and hint.
 - Missing class/symbol → return MCP tool error with `code: NOT_FOUND` and suggestions (did‑you‑mean list).
 - XML parse error → include filename and line/column when available.
 

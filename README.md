@@ -15,47 +15,57 @@ Offline Model Context Protocol (MCP) server that serves Godot Engine API documen
 
 ## Quick Start
 
-Prereqs:
-- Node.js 20+
-- pnpm (recommended) or npm
+### Via npx (recommended)
 
-Docs source:
-- Place Godot XML docs under `./doc/classes/*.xml` (this repo already includes a representative set for local testing). Point `GODOT_DOC_DIR` elsewhere if you keep docs outside the repo.
-- Need fresh docs from an existing Godot checkout? Run the editor binary with `--doctool` pointing at your target `doc/classes` folder (add `--headless` for CI/servers). If you don't already have the CLI binary on your `PATH`, follow the [official command line instructions](https://docs.godotengine.org/en/latest/tutorials/editor/command_line_tutorial.html) to install or alias it (package install, manual build, or exporting the editor).
+Add to your Claude Code settings (`~/.claude.json` → `mcpServers`):
 
-  ```bash
-  # inside the upstream Godot repo after building the editor, or anywhere godot is on PATH
-  godot --doctool ./doc/classes --headless
-  ```
-
-  The command exports the full XML set (classes, signals, etc.). Repeat whenever you update your Godot source to keep docs in sync.
-
-Run (stdio):
-
-```bash
-# from repo root
-export GODOT_DOC_DIR=./doc
-pnpm install
-pnpm dev          # hot reload via tsx, runs the stdio MCP server
-
-# or run without watch
-pnpm start
+```json
+{
+  "mcpServers": {
+    "godot-docs": {
+      "command": "npx",
+      "args": ["-y", "godot-doc-mcp"]
+    }
+  }
+}
 ```
 
-Smoke tests and examples:
+The server auto-detects your Godot installation and extracts API docs on first run. Docs are cached for fast subsequent starts.
 
-```bash
-# Lightweight end‑to‑end checks
-pnpm test
+### Multiple Godot versions
 
-# Example local smoke against the parser/index/tools (no external clients)
-pnpm run smoke:local
+Point at a specific Godot binary:
 
-# Minimal MCP client demo (stdio handshake + tool calls)
-pnpm run smoke:mcp
+```json
+{
+  "mcpServers": {
+    "godot-docs": {
+      "command": "npx",
+      "args": ["-y", "godot-doc-mcp"],
+      "env": {
+        "GODOT_BIN": "/path/to/godot4.3"
+      }
+    }
+  }
+}
+```
 
-# Manual, step‑by‑step stdio session (prints what to send/expect)
-node --import tsx scripts/manual-stdio.mjs
+### Pre-extracted docs
+
+If you already have XML docs extracted (or want to use the bundled docs for development):
+
+```json
+{
+  "mcpServers": {
+    "godot-docs": {
+      "command": "npx",
+      "args": ["-y", "godot-doc-mcp"],
+      "env": {
+        "GODOT_DOC_DIR": "/path/to/docs"
+      }
+    }
+  }
+}
 ```
 
 ---
@@ -93,10 +103,22 @@ Non‑goals (for now): authoring docs, live web fetching, or general web search.
 ## Configuration
 
 Environment variables:
-- `GODOT_DOC_DIR` (default `./doc`) — Root that contains `classes/`.
+- `GODOT_DOC_DIR` (optional, default: auto-detected) — Path to pre-extracted Godot XML docs (must contain `classes/` subdirectory). Overrides auto-detection.
+- `GODOT_BIN` (optional, default: auto-detected) — Path to a specific Godot binary. Used to extract docs via `--doctool`.
 - `GODOT_INDEX_PATH` (default `./.cache/godot-index.json`) — On‑disk index for warm start.
 - `MCP_SERVER_LOG` (default `info`) — `silent|error|warn|info|debug`.
 - `MCP_STDIO` (default `1`) — Use stdio transport.
+
+### How docs are found
+
+The server resolves documentation in this order:
+
+1. `GODOT_DOC_DIR` — use pre-extracted XML docs directly
+2. `GODOT_BIN` — run the specified binary with `--doctool` to extract docs
+3. **Auto-detect** — search PATH for `godot`, `godot4`, etc.
+4. **Error** — clear instructions on how to provide docs
+
+Extracted docs are cached in `.cache/godot-{version}/` and reused on subsequent starts.
 
 Examples:
 
@@ -299,6 +321,11 @@ pnpm install
 pnpm dev
 ```
 
+For local development, use the bundled docs:
+```bash
+GODOT_DOC_DIR=./doc pnpm dev
+```
+
 Type checking and formatting:
 
 ```bash
@@ -326,9 +353,9 @@ Adding or changing MCP tools:
 
 ## Troubleshooting
 
-- Invalid `GODOT_DOC_DIR`
+- No docs found
   - Symptom: startup fails with a clear message
-  - Fix: ensure the path exists and contains `classes/` XML files
+  - Fix: ensure Godot is on your PATH, or set `GODOT_BIN` or `GODOT_DOC_DIR`. If using `GODOT_DOC_DIR`, ensure the path exists and contains `classes/` XML files.
 
 - Missing class or symbol
   - Symptom: `NOT_FOUND` tool error with suggestions
@@ -355,7 +382,7 @@ Adding or changing MCP tools:
 ## FAQ
 
 - Where do the docs come from?
-  - From a local copy of the official Godot docs (XML). Point `GODOT_DOC_DIR` to your copy; by default the server uses `./doc`.
+  - The server auto-detects your Godot installation and extracts docs via `--doctool`. You can also point `GODOT_DOC_DIR` to a pre-extracted copy or set `GODOT_BIN` to a specific binary.
 
 - Does this support Godot 3.x docs?
   - Yes, with graceful handling of older schema differences (some sections may be missing).
