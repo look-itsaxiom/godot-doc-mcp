@@ -1,7 +1,6 @@
 {
   "name": "godot-doc-mcp",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "bin": {
     "godot-doc-mcp": "./bin/godot-doc-mcp.mjs"
@@ -28,12 +27,12 @@
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",
     "@types/node": "^24.5.2",
-    "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.1",
+    "tsx": "^4.20.5",
     "fast-xml-parser": "^5.2.5",
     "zod": "^3.25.0"
   }
