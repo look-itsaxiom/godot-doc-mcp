@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "godot-doc-mcp",
+  "version": "0.2.0",
+  "description": "Offline Godot API docs for Claude Code",
+  "owner": {
+    "name": "Chase Skibeness",
+    "email": "chase@skibeness.com"
+  },
+  "plugins": [
+    {
+      "name": "godot-doc-mcp",
+      "description": "Offline Godot API docs — 15 MCP tools for search, lookup, and concept exploration. Auto-detects your Godot installation.",
+      "category": "gamedev",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/look-itsaxiom/godot-doc-mcp.git"
+      },
+      "homepage": "https://github.com/look-itsaxiom/godot-doc-mcp"
+    }
+  ]
+}
