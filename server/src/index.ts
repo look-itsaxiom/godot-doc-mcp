@@ -1,7 +1,8 @@
 import path from "node:path";
 import { createGodotTools, type GodotTools } from "./adapters/godotTools.js";
 import { classifyConcepts } from "./concepts/classifier.js";
-import { isNodeVersionOk, loadConfig, validateConfig } from "./env.js";
+import { resolveDocDir } from "./docResolver.js";
+import { isNodeVersionOk, loadConfig } from "./env.js";
 import { buildIndex } from "./indexer/indexBuilder.js";
 import { createLogger } from "./logger.js";
 import { startMcpStdioServer } from "./mcp/stdio.js";
@@ -12,9 +13,14 @@ export async function createServer(env: Record<string, string | undefined> = pro
     throw new Error("Node.js v20+ required");
   }
   const cfg = loadConfig(env);
-  validateConfig(cfg);
   const logger = createLogger(cfg.MCP_SERVER_LOG);
-  const classes = await parseAll(cfg.GODOT_DOC_DIR);
+  const { docDir, source, godotVersion } = await resolveDocDir({
+    godotDocDir: cfg.GODOT_DOC_DIR,
+    godotBin: cfg.GODOT_BIN,
+    cacheDir: path.dirname(cfg.GODOT_INDEX_PATH),
+  });
+  logger.info(`Docs resolved from ${source}${godotVersion ? ` (Godot ${godotVersion})` : ""}: ${docDir}`);
+  const classes = await parseAll(docDir);
   const index = buildIndex(classes);
   const conceptMap = classifyConcepts(classes);
   const tools = createGodotTools(classes, index, logger, conceptMap);
@@ -88,9 +94,14 @@ export async function start(env: Record<string, string | undefined> = process.en
         // Warm up docs/index only after responding to initialize.
         (async () => {
           try {
-            // Validate doc dir after initialize so clients don't time out waiting.
-            validateConfig(cfg);
-            const classes = await parseAll(cfg.GODOT_DOC_DIR);
+            // Resolve doc dir after initialize so clients don't time out waiting.
+            const { docDir, source, godotVersion } = await resolveDocDir({
+              godotDocDir: cfg.GODOT_DOC_DIR,
+              godotBin: cfg.GODOT_BIN,
+              cacheDir: path.dirname(cfg.GODOT_INDEX_PATH),
+            });
+            logger.info(`Docs resolved from ${source}${godotVersion ? ` (Godot ${godotVersion})` : ""}: ${docDir}`);
+            const classes = await parseAll(docDir);
             const index = buildIndex(classes);
             const conceptMap = classifyConcepts(classes);
             impl = createGodotTools(classes, index, logger, conceptMap);
